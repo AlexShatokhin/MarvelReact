@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useState, useEffect } from 'react';
 
 import Error from '../Error/Error'
 import Spinner from '../Spinner/Spinner'
@@ -6,91 +6,77 @@ import MarvelService from '../../services/MarvelService';
 import './randomChar.scss';
 import mjolnir from '../../resources/img/mjolnir.png';
 
-class RandomChar extends Component {
+const RandomChar = (props) => {
 
-    constructor(props){
-        super(props)
-        this.state = {
-            char: {},
-            loading: true,
-            error: false
-        }
+    const [char, setChar] = useState({});
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(false);
+
+    const marvelService = new MarvelService();
+
+    useEffect(()=>{
+        showChac();
+    },[])
+
+    const onCharLoading = () => {
+        setLoading(true);
+        setError(false);
+    }
+
+    const onCharLoaded = (char) => {
+        setChar(char);
+        setLoading(false);
+        setError(false);
 
     }
 
-    MarvelService = new MarvelService();
-
-    componentDidMount() {
-        this.showChac();
+    const onError = () => {
+        setLoading(false);
+        setError(true);
     }
 
-    onCharLoading = () => {
-        this.setState({
-            error: false,
-            loading: true
-        })
-    }
-
-    onCharLoaded = (char) => {
-        this.setState({
-            char,
-            loading: false,
-            error: false
-        })
-    }
-
-    onError = () => {
-        this.setState({
-            loading: false,
-            error: true
-        })
-    }
-
-    showChac = () => {
+    const showChac = () => {
         const id = Math.floor(Math.random() * (1010789 - 1009146) + 1009146)
-        this.onCharLoading()
-        this.MarvelService.getCharacter(id)
+        onCharLoading()
+        marvelService.getCharacter(id)
         .then(res => {
-            this.onCharLoaded(res)
+            onCharLoaded(res)
         })
-        .catch(()=>this.onError())
+        .catch(()=>onError())
     }
 
-    render(){
-        let {char, loading, error} = this.state
-        let isLoading = loading ? <Spinner></Spinner> : null;
-        let isError = error ? <Error></Error> : null;
-        let isChar = !(loading || error) ? <View char = {char}></View> : null;
+    let isLoading = loading ? <Spinner></Spinner> : null;
+    let isError = error ? <Error></Error> : null;
+    let isChar = !(loading || error) ? <View char = {char}></View> : null;
 
-        return (
-            <div className="randomchar">
-                {isLoading}
-                {isError}
-                {isChar}
-                <div className="randomchar__static">
-                    <p className="randomchar__title">
-                        Random character for today!<br/>
-                        Do you want to get to know him better?
-                    </p>
-                    <p className="randomchar__title">
-                        Or choose another one
-                    </p>
-                    <button onClick={this.showChac} className="button button__main">
-                        <div className="inner">try it</div>
-                    </button>
-                    <img src={mjolnir} alt="mjolnir" className="randomchar__decoration"/>
-                </div>
+    return (
+        <div className="randomchar">
+            {isLoading}
+            {isError}
+            {isChar}
+            <div className="randomchar__static">
+                <p className="randomchar__title">
+                    Random character for today!<br/>
+                    Do you want to get to know him better?
+                </p>
+                <p className="randomchar__title">
+                    Or choose another one
+                </p>
+                <button onClick={showChac} className="button button__main">
+                    <div className="inner">try it</div>
+                </button>
+                <img src={mjolnir} alt="mjolnir" className="randomchar__decoration"/>
             </div>
-        )
+        </div>
+    )
     
-    }
 }
 
 const View = ({char:{name, description, thumbnail, urls, wiki}}) => {
 
     let styleImg = {objectFit: "cover"};
-
-    if(thumbnail.indexOf("image_not_available.jpg") > -1){
+    console.log(thumbnail)
+    if(thumbnail === 'http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg'){
         styleImg = {objectFit: "contain"}
     }
 
