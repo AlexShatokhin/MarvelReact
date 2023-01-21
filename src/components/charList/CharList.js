@@ -4,28 +4,25 @@ import PropTypes from 'prop-types';
 
 import Error from '../Error/Error';
 import Spinner from '../Spinner/Spinner';
-import MarvelService from '../../services/MarvelService';
+import useMarvelService from '../../services/MarvelService';
 
 import './charList.scss';
 
 const CharList = (props) => {
 
     const [chars, setChars] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(false);
-    const [charListLoading, setCharListLoading] = useState(false);
     const [offset, setOffset] = useState(400);
     const [isEnded, setIsEnded] = useState(false);
-    const [scrollLoading, setScrollLoading] = useState(false);
 
     const itemRefs = [];
+    let firstLoad = true;
 
-    const marvelService = new MarvelService();
+    const {loading, error, getAllCharacters, cleanError} = useMarvelService();
 
     const onFocus = (index) => {
-        if(itemRefs.current){
-            itemRefs.current.forEach((item,i) => {
-                if( item.classList.contains("char__item_selected")){
+        if(itemRefs){
+            itemRefs.forEach((item,i) => {
+                if(item.classList.contains("char__item_selected")){
                     item.classList.remove("char__item_selected");
                 }
                 if(i === index){
@@ -37,7 +34,7 @@ const CharList = (props) => {
 
     useEffect(()=>{
         onRequest();
-
+        firstLoad = false;
     },[])
 
     // const updateCharOnScroll = (offset) => {
@@ -46,15 +43,10 @@ const CharList = (props) => {
     //     }
     // }
 
-    const onRequest = () => {        onCharListLoading()
-        marvelService.getAllCharacters(offset)
+    const onRequest = () => {   
+        cleanError();     
+        getAllCharacters(offset)
         .then(onCharLoaded)
-        .catch(()=>onError())
-    }
-
-    const onCharListLoading = () => {
-        setCharListLoading(true);
-        setScrollLoading(true);
     }
 
     const onCharLoaded = (newChars) => {
@@ -62,20 +54,10 @@ const CharList = (props) => {
         if(newChars < 9){ended = true;}
 
         setChars(chars => chars = [...chars, ...newChars]);
-        setLoading(false);
-        setError(false);
-        setCharListLoading(false);
         setOffset(offset => offset + 9);
         setIsEnded(ended);
-        setScrollLoading(false);
-
     }
 
-    const onError = () => {
-        setLoading(false);
-        setError(true);
-
-    }
 
     const renderItems = () => {
         const items = chars.map((char,i) => {
@@ -87,7 +69,7 @@ const CharList = (props) => {
             }
 
             return <li
-            // ref = {el => itemRefs.current[i] = el}
+            ref = {el => itemRefs[i] = el}
             tabIndex = {0}
             key = {char.id}
             char = {char}
@@ -111,7 +93,7 @@ const CharList = (props) => {
         )
     }
 
-    const isLoading = loading ? <Spinner></Spinner> : null;
+    const isLoading = (loading && !firstLoad) ? <Spinner></Spinner> : null;
     const isError = error ? <Error /> : null;
     const isContent = !(loading && error) ? renderItems() : null;
     return (
@@ -121,7 +103,7 @@ const CharList = (props) => {
             {isContent}
 
             <button style = {{display: isEnded ? "none" : "block"}}
-            disabled = {charListLoading} 
+            disabled = {loading} 
             onClick = {()=>onRequest(offset)}
             className="button button__main button__long">
 

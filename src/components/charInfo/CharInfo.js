@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 
-import MarvelService from '../../services/MarvelService'
+import useMarvelService from '../../services/MarvelService'
 import Error from '../Error/Error'
 import Spinner from '../Spinner/Spinner'
 import Skeleton from '../skeleton/Skeleton';
@@ -10,10 +10,8 @@ import './charInfo.scss';
 const CharInfo = (props) => {
 
     const [char, setChar] = useState(localStorage.getItem("charInfo")?  JSON.parse(localStorage.getItem("charInfo")): null)
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(false);
 
-    const marvelService = new MarvelService();
+    const {error, loading, getCharacter, cleanError} = useMarvelService();
 
     const prevProps = useRef(props.selectedId)
 
@@ -23,28 +21,19 @@ const CharInfo = (props) => {
         }
     },[props.selectedId])
 
-    const onCharLoading = () => {
-        setLoading(true)
-    }
 
     const onCharLoaded = (char) => {
         setChar(char);
-        setLoading(false);
         localStorage.setItem("charInfo", JSON.stringify(char))
     }
 
-    const onError = () => {
-        setError(true);
-        setLoading(false);
-    }
 
     const updateChar = (id) => {
         if(id){
+            cleanError();
             document.documentElement.scrollTop = 400;
-            onCharLoading();
-            marvelService.getCharacter(id)
+            getCharacter(id)
             .then(res => {onCharLoaded(res)})
-            .catch(onError)
         }
 
     }

@@ -2,47 +2,32 @@ import { useState, useEffect } from 'react';
 
 import Error from '../Error/Error'
 import Spinner from '../Spinner/Spinner'
-import MarvelService from '../../services/MarvelService';
+import useMarvelService from '../../services/MarvelService';
 import './randomChar.scss';
 import mjolnir from '../../resources/img/mjolnir.png';
 
 const RandomChar = (props) => {
 
     const [char, setChar] = useState({});
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(false);
-
-    const marvelService = new MarvelService();
+    const {loading, error, getCharacter, cleanError} = useMarvelService();
 
     useEffect(()=>{
         showChac();
     },[])
 
-    const onCharLoading = () => {
-        setLoading(true);
-        setError(false);
-    }
 
     const onCharLoaded = (char) => {
         setChar(char);
-        setLoading(false);
-        setError(false);
 
-    }
-
-    const onError = () => {
-        setLoading(false);
-        setError(true);
     }
 
     const showChac = () => {
+        cleanError()
         const id = Math.floor(Math.random() * (1010789 - 1009146) + 1009146)
-        onCharLoading()
-        marvelService.getCharacter(id)
+        getCharacter(id)
         .then(res => {
             onCharLoaded(res)
         })
-        .catch(()=>onError())
     }
 
     let isLoading = loading ? <Spinner></Spinner> : null;
@@ -74,8 +59,7 @@ const RandomChar = (props) => {
 
 const View = ({char:{name, description, thumbnail, urls, wiki}}) => {
 
-    let styleImg = {objectFit: "cover"};
-    console.log(thumbnail)
+    let styleImg = {objectFit: "cover"}; 
     if(thumbnail === 'http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg'){
         styleImg = {objectFit: "contain"}
     }
