@@ -92,14 +92,11 @@ const CharList = (props) => {
             </ul>
         )
     }
-
-    const isLoading = (loading && !firstLoad) ? <Spinner></Spinner> : null;
-    const isError = error ? <Error /> : null;
+    
     const isContent = !(loading && error) ? renderItems() : null;
     return (
         <div className="char__list">
-            {isLoading}
-            {isError}
+
             {isContent}
 
             <button style = {{display: isEnded ? "none" : "block"}}
