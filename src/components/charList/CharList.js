@@ -1,8 +1,9 @@
 import React from 'react';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import { Transition } from 'react-transition-group';
+import { Formik } from 'formik';
 
-import Error from '../Error/Error';
 import Spinner from '../Spinner/Spinner';
 import useMarvelService from '../../services/MarvelService';
 
@@ -11,13 +12,27 @@ import './charList.scss';
 const CharList = (props) => {
 
     const [chars, setChars] = useState([]);
-    const [offset, setOffset] = useState(400);
+    const [offset, setOffset] = useState(0);
     const [isEnded, setIsEnded] = useState(false);
+    const [firstLoad, setFirstLoad] = useState(true);
 
     const itemRefs = [];
-    let firstLoad = true;
 
     const {loading, error, getAllCharacters, cleanError} = useMarvelService();
+
+    const duration = 300;
+
+    const defaultStyle = {
+      transition: `opacity ${duration}ms ease-in-out`,
+      opacity: 0,
+    }
+    
+    const transitionStyles = {
+      entering: { opacity: 1 },
+      entered:  { opacity: 1 },
+      exiting:  { opacity: .9 },
+      exited:  { opacity: .9 },
+    };
 
     const onFocus = (index) => {
         if(itemRefs){
@@ -34,7 +49,6 @@ const CharList = (props) => {
 
     useEffect(()=>{
         onRequest();
-        firstLoad = false;
     },[])
 
     // const updateCharOnScroll = (offset) => {
@@ -68,22 +82,32 @@ const CharList = (props) => {
                 styleImg = {objectFit: "unset"}
             }
 
-            return <li
-            ref = {el => itemRefs[i] = el}
-            tabIndex = {0}
-            key = {char.id}
-            char = {char}
-            onClick={() => {props.selectId(char.id); onFocus(i)}} 
-            className="char__item"
-            onKeyDown={(e) => {
-                if (e.key === ' ' || e.key === "Enter") {
-                    props.selectId(char.id);
-                    onFocus(i);
-                }
-            }}>
-                <img style={styleImg} src={char.thumbnail} alt="abyss"/>
-                <div className="char__name">{char.name}</div>
-            </li>
+            return(
+                <Transition timeout={300} in = {!(loading || error)}>
+                    {state => (
+                        <li
+                        style={{
+                            ...defaultStyle,
+                            ...transitionStyles[state]  
+                        }}
+                        ref = {el => itemRefs[i] = el}
+                        tabIndex = {0}
+                        key = {char.id}
+                        char = {char}
+                        onClick={() => {props.selectId(char.id); onFocus(i)}} 
+                        className="char__item"
+                        onKeyDown={(e) => {
+                            if (e.key === ' ' || e.key === "Enter") {
+                                props.selectId(char.id);
+                                onFocus(i);
+                            }
+                        }}>
+                            <img style={styleImg} src={char.thumbnail} alt="abyss"/>
+                            <div className="char__name">{char.name}</div>
+                        </li>
+                    )}
+                </Transition>
+            ) 
         })
 
         return (
@@ -94,14 +118,16 @@ const CharList = (props) => {
     }
     
     const isContent = !(loading && error) ? renderItems() : null;
+    const isLoading = (loading && firstLoad) ? <Spinner /> : null;
     return (
         <div className="char__list">
 
+            {isLoading}
             {isContent}
 
             <button style = {{display: isEnded ? "none" : "block"}}
             disabled = {loading} 
-            onClick = {()=>onRequest(offset)}
+            onClick = {()=>{onRequest(offset); setFirstLoad(false)}}
             className="button button__main button__long">
 
                 <div className="inner">load more</div>

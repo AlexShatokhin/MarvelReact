@@ -4,7 +4,7 @@ const useMarvelService = () => {
 
     const _apikey = "50e5395a1a1e4e4347c98612859f811c";
     const _dataURL = "https://gateway.marvel.com:443/v1/public/";
-    const _OpeningOffset = 400;
+    const _OpeningOffset = 1;
 
     const {httpRequest, loading, error, cleanError} = useHttpHook();
 
@@ -17,6 +17,11 @@ const useMarvelService = () => {
     async function getCharacter(id) {
         const char = await httpRequest(`${_dataURL}characters/${id}?apikey=${_apikey}`);
         return _transformCharacter(char.data.results[0]);
+    }
+
+    async function getCharacterByName(name) {
+        const char = await httpRequest(`${_dataURL}characters?name=${name}&apikey=${_apikey}`);
+        return _transformCharacter(char.data.results[0]) ;
     }
 
     async function getAllComics(offset = _OpeningOffset){
@@ -50,11 +55,11 @@ const useMarvelService = () => {
             pageCount: comic.pageCount ? `${comic.pageCount} p.` : "No information about the number of pages",
             thumbnail: comic.thumbnail.path + "." + comic.thumbnail.extension,
             language: comic.textObjects[0] ?  comic.textObjects[0].language : "en-us",
-            price: comic.prices[0].price ? comic.prices[0].price : "not available"
+            price: comic.prices[0].price ? comic.prices[0].price : 0
         }
     }
 
-    return {loading, error, cleanError, getCharacter, getAllCharacters, getComic, getAllComics};
+    return {loading, error, cleanError, getCharacter, getAllCharacters, getComic, getAllComics, getCharacterByName};
 
 }
 

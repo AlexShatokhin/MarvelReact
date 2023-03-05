@@ -7,29 +7,29 @@ import useMarvelService from '../../services/MarvelService';
 import {SinglePageLayout} from './SinglePageLayout'
 import './singleComic.scss';
 
-const SingleComicPage = () => {
+const SingleCharacterPage = () => {
 
-    const {comicId} = useParams();
-    const {getComic, loading, error, cleanError} = useMarvelService();
-    const [comic, setComic] = useState(null);
+    const {charName} = useParams();
+    const {getCharacterByName, loading, error, cleanError} = useMarvelService();
+    const [char, setChar] = useState(null);
 
     useEffect(()=>{
-        onComicsLoading();
+        onCharLoading();
     }, [])
 
-    const onComicsLoading = () => {
+    const onCharLoading = () => {
         cleanError();
-        getComic(comicId)
-        .then(onComicLoaded)
+        getCharacterByName(charName)
+        .then(onCharLoaded)
     }
 
-    const onComicLoaded = (res) => {
-        setComic(res);
+    const onCharLoaded = (res) => {
+        setChar(res);
     }
 
     const isLoading = loading ? <Spinner /> : null;
     const isError =  error ? <Error /> : null;
-    const isContent = !(loading || error || !comic)? <SinglePageLayout dataType={"Comic"} prevProps = {comic} /> : null;
+    const isContent = !(loading || error || !char)? <SinglePageLayout dataType={"Character"} prevProps = {char} /> : null;
 
     return (
         <div className="single-comic">
@@ -40,4 +40,4 @@ const SingleComicPage = () => {
     )
 }
 
-export default SingleComicPage;
+export default SingleCharacterPage;
