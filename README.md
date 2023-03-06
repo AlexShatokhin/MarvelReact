@@ -7,7 +7,7 @@ Web-приложение, основанное на базе данных о г�
 
 ## Demo
 
-https://alexshatokhin.github.io/MarvelReact/
+[https://alexshatokhin.github.io/MarvelReact/](https://alexshatokhin.github.io/)
 
 
 ## Стэк
